@@ -1,2 +1,2 @@
-# -kicknplay_app
+# kicknplay_app
 app movil 
