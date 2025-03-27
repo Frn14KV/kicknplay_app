@@ -59,7 +59,12 @@ class _CanchasPageState extends State<CanchasPage> {
                                 height: 50,
                                 fit: BoxFit.cover,
                               )
-                            : Icon(Icons.image_not_supported),
+                            : Image.asset(
+                                'assets/k&plogo.jpg', // Logo de tu app
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.contain,
+                              ),
                         title: Text(
                           cancha['nombre'] ?? "Sin nombre",
                           style: TextStyle(fontWeight: FontWeight.bold),
@@ -69,7 +74,6 @@ class _CanchasPageState extends State<CanchasPage> {
                           "Capacidad: ${cancha['capacidad'] ?? "N/A"}",
                         ),
                         onTap: () {
-                          // Agrega lógica si deseas mostrar más detalles al hacer clic en la cancha
                           // Navega a la pantalla de detalles de la cancha
                           Navigator.push(
                             context,

@@ -15,12 +15,30 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'KicknPlay',
       theme: ThemeData(
-          primarySwatch: Colors.blue,
-          bottomNavigationBarTheme: BottomNavigationBarThemeData(
-            backgroundColor: Colors.blue, // Fondo del BottomNavigationBar
-            selectedItemColor: Colors.blueAccent, // Ítem seleccionado
-            unselectedItemColor: Colors.white, // Ítems no seleccionados
-          )),
+        primaryColor: Colors.blue, // Color principal
+        scaffoldBackgroundColor: Colors.grey[200], // Fondo claro
+        textTheme: TextTheme(
+          displayLarge: TextStyle(
+              fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue),
+          bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
+          bodyMedium: TextStyle(fontSize: 14, color: Colors.grey[700]),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.blueAccent, // Color del texto
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10), // Botones redondeados
+            ),
+          ),
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Colors.blue,
+          selectedItemColor: Colors.yellowAccent,
+          unselectedItemColor: Colors.white,
+        ),
+      ),
+
       home: LoginPage(), // Inicia en la pantalla de inicio de sesión
     );
   }
