@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kicknplay_app/main.dart';
+import 'package:kicknplay_app/screens/home_page.dart';
 import '../services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -59,38 +59,111 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Iniciar Sesión")),
-      body: Padding(
+      backgroundColor: Colors.white, // Fondo limpio y elegante
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              "Bienvenido",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            SizedBox(height: 50), // Espaciado inicial
+
+            // Logo
+            Image.asset(
+              'assets/k&plogo.jpg',
+              width: 150,
+              height: 150,
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 20),
+
+            // Título del Login
+            Text(
+              "Bienvenido a KicknPlay",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0077FF),
+              ),
+            ),
+            SizedBox(height: 30),
+
+            // Campo de Usuario
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: "Usuario"),
-            ),
-            SizedBox(height: 8),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: "Contraseña"),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: "Usuario",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person, color: Color(0xFF0077FF)),
+                filled: true,
+                fillColor: Colors.grey[200], // Fondo sutil para el campo
+              ),
             ),
             SizedBox(height: 16),
+
+            // Campo de Contraseña
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: "Contraseña",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock, color: Color(0xFF0077FF)),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              obscureText: true, // Ocultar texto para la contraseña
+            ),
+            SizedBox(height: 30),
+
+            // Botón de Iniciar Sesión
             _isLoading
-                ? Center(
-                    child: CircularProgressIndicator()) // Indicador de carga
+                ? Center(child: CircularProgressIndicator())
                 : SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _login,
-                      child: Text("Iniciar Sesión"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF0077FF), // Azul consistente
+                        foregroundColor: Colors.white, // Texto blanco
+                        padding:
+                            EdgeInsets.symmetric(vertical: 15), // Botón grande
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        "Iniciar Sesión",
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
                   ),
+            SizedBox(height: 20),
+
+            // Enlaces útiles
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    // Navegar a Recuperar Contraseña
+                  },
+                  child: Text(
+                    "¿Olvidaste tu contraseña?",
+                    style: TextStyle(color: Color(0xFF0077FF)),
+                  ),
+                ),
+                Text("|"),
+                TextButton(
+                  onPressed: () {
+                    // Navegar a Registro
+                  },
+                  child: Text(
+                    "Registrarse",
+                    style: TextStyle(color: Color(0xFF0077FF)),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 40), // Espaciado al final
           ],
         ),
       ),
