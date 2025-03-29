@@ -22,6 +22,7 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       // Guardar el access token y el refresh token de manera segura
+
       await secureStorage.write(key: 'access_token', value: data['access']);
       await secureStorage.write(key: 'refresh_token', value: data['refresh']);
     } else {

@@ -1,16 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:url_launcher/url_launcher.dart'; // Necesario para abrir enlaces
+import 'package:kicknplay_app/pages/reservar_cancha_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class CanchaDetailsPage extends StatelessWidget {
+class CanchaDetailsPage extends StatefulWidget {
   final Map<String, dynamic> cancha;
 
   const CanchaDetailsPage({Key? key, required this.cancha}) : super(key: key);
 
+  @override
+  _CanchaDetailsPageState createState() => _CanchaDetailsPageState();
+}
+
+class _CanchaDetailsPageState extends State<CanchaDetailsPage> {
+  int _comentariosMostrados = 6; // Número inicial de comentarios mostrados
+  final TextEditingController _commentController = TextEditingController();
+  double _newRating = 0.0; // Calificación dada por el usuario
+
+  // Método para cargar más comentarios
+  void _cargarMasComentarios() {
+    setState(() {
+      _comentariosMostrados +=
+          6; // Incrementa los comentarios mostrados en lotes de 6
+    });
+  }
+
   // Método para abrir Google Maps con la dirección
   void _openMaps(BuildContext context) async {
-    final latitud = cancha['latitud'];
-    final longitud = cancha['longitud'];
+    final latitud = widget.cancha['latitud'];
+    final longitud = widget.cancha['longitud'];
     final googleMapsUrl =
         "https://www.google.com/maps/search/?api=1&query=$latitud,$longitud";
 
@@ -25,158 +43,294 @@ class CanchaDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final comentarios = widget.cancha['comentarios'] ?? [];
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(cancha['nombre'] ?? "Detalles de la Cancha"),
+        title: Text(
+          widget.cancha['nombre'] ?? "Detalles de la Cancha",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Color(0xFF0077FF),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen destacada o logo predeterminado
-            if (cancha['imagen_url'] != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  cancha['imagen_url'],
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                ),
-              )
-            else
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  'assets/k&plogo.jpg', // Ruta de tu logo en los assets
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.contain,
-                ),
-              ),
+            // Imagen destacada
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: widget.cancha['imagen_url'] != null
+                  ? Image.network(
+                      widget.cancha['imagen_url'],
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.asset(
+                      'assets/k&plogo.jpg',
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+            ),
             SizedBox(height: 20),
-            // Nombre de la cancha
-            Text(
-              cancha['nombre'] ?? "Sin nombre",
-              style: TextStyle(
+
+            // Título de la cancha
+            Center(
+              child: Text(
+                widget.cancha['nombre'] ?? "Sin nombre",
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue),
+                  color: Colors.blue[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             SizedBox(height: 10),
-            // Dirección
+
+            // Dirección y capacidad
             Row(
               children: [
                 Icon(Icons.location_on, color: Colors.red),
-                SizedBox(width: 5),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    cancha['direccion'] ?? "Dirección no disponible",
-                    style: TextStyle(fontSize: 16),
+                    widget.cancha['direccion'] ?? "Dirección no disponible",
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                   ),
                 ),
               ],
             ),
             SizedBox(height: 10),
-            // Capacidad
             Row(
               children: [
                 Icon(Icons.people, color: Colors.green),
-                SizedBox(width: 5),
+                SizedBox(width: 8),
                 Text(
-                  "Capacidad: ${cancha['capacidad'] ?? "No especificada"} personas",
-                  style: TextStyle(fontSize: 16),
+                  "Capacidad: ${widget.cancha['capacidad'] ?? "No especificada"} personas",
+                  style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                 ),
               ],
             ),
             SizedBox(height: 20),
-            Divider(),
-            // Comentarios
-            Text(
-              "Comentarios",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            if (cancha['comentarios'] != null &&
-                cancha['comentarios'].isNotEmpty)
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: cancha['comentarios'].length,
-                itemBuilder: (context, index) {
-                  final comentario = cancha['comentarios'][index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue,
-                        child: Text(
-                          comentario['user'][0].toUpperCase(),
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      title: Text(
-                        comentario['texto'],
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RatingBarIndicator(
-                            rating:
-                                comentario['calificacion']?.toDouble() ?? 0.0,
-                            itemBuilder: (context, index) => Icon(
-                              Icons.star,
-                              color: Colors.orange,
-                            ),
-                            itemCount: 5,
-                            itemSize: 20.0,
-                          ),
-                          Text(
-                            "Fecha: ${DateTime.parse(comentario['fecha_creacion']).toLocal()}",
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              )
-            else
-              Text(
-                "Aún no hay comentarios sobre esta cancha.",
-                style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-              ),
-            SizedBox(height: 20),
-            // Botones: Reservar y Ver Dirección
+
+            Divider(color: Colors.grey[300], thickness: 1),
+
+            // Botones "Reservar" y "Ver Dirección"
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    // Lógica para reservar (puedes redirigir a otra pantalla o mostrar un mensaje temporal)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Próximamente: Reservar cancha")),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReservarCanchaPage(
+                          cancha: widget
+                              .cancha, // Proporciona la información de la cancha
+                          usuarioId:
+                              11, // Reemplaza '11' con el ID real del usuario
+                        ),
+                      ),
                     );
                   },
                   icon: Icon(Icons.calendar_today),
                   label: Text("Reservar"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Colors.blue[700],
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () => _openMaps(
-                      context), // Llama al método para abrir Google Maps
+                  onPressed: () => _openMaps(context),
                   icon: Icon(Icons.map),
                   label: Text("Ver Dirección"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.green[600],
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   ),
                 ),
               ],
+            ),
+
+            SizedBox(height: 20),
+
+            Divider(color: Colors.grey[300], thickness: 1),
+
+            // Comentarios
+            Text(
+              "Comentarios",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            // Muestra comentarios en lotes
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: (_comentariosMostrados < comentarios.length)
+                  ? _comentariosMostrados
+                  : comentarios.length,
+              itemBuilder: (context, index) {
+                final comentario = comentarios[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 8.0),
+                  elevation: 2,
+                  shadowColor: Colors.grey[300],
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.blue,
+                              child: Text(
+                                comentario['user'] != null
+                                    ? comentario['user'][0].toUpperCase()
+                                    : "?",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              comentario['user'] ?? "Usuario desconocido",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        RatingBarIndicator(
+                          rating: comentario['calificacion']?.toDouble() ?? 0.0,
+                          itemBuilder: (context, _) => Icon(
+                            Icons.star,
+                            color: Colors.orange,
+                          ),
+                          itemCount: 5,
+                          itemSize: 20.0,
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          comentario['texto'] ?? "Comentario no disponible",
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Botón "Cargar más comentarios"
+            if (_comentariosMostrados < comentarios.length)
+              Center(
+                child: TextButton(
+                  onPressed: _cargarMasComentarios,
+                  child: Text(
+                    "Cargar más comentarios",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+
+            if (comentarios.isEmpty)
+              Text(
+                "Aún no hay comentarios sobre esta cancha.",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey[700],
+                ),
+              ),
+
+            SizedBox(height: 20),
+
+            Divider(color: Colors.grey[300], thickness: 1),
+
+            // Sección para agregar un nuevo comentario
+            Text(
+              "Deja tu comentario",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: "Escribe tu comentario aquí...",
+              ),
+              maxLines: 3,
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Text(
+                  "Calificación: ",
+                  style: TextStyle(fontSize: 16),
+                ),
+                RatingBar.builder(
+                  initialRating: 0,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: Colors.orange,
+                  ),
+                  onRatingUpdate: (rating) {
+                    setState(() {
+                      _newRating = rating;
+                    });
+                  },
+                  itemSize: 30,
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  final comentario = _commentController.text;
+                  if (comentario.isNotEmpty && _newRating > 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "Tu comentario fue enviado con una calificación de $_newRating estrellas.",
+                        ),
+                      ),
+                    );
+                    _commentController.clear(); // Limpia el campo de texto
+                    setState(() {
+                      _newRating = 0.0; // Reinicia la calificación
+                    });
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "Por favor, ingresa un comentario y calificación",
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Text("Enviar Comentario"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                ),
+              ),
             ),
           ],
         ),

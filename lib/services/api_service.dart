@@ -77,4 +77,38 @@ class ApiService {
       throw Exception("Error al cargar los eventos: ${response.body}");
     }
   }
+
+  Future<void> createReserva(Map<String, dynamic> reserva) async {
+    // Recupera el token desde almacenamiento seguro
+    final token = await secureStorage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception(
+          "No se encontró el token. Por favor inicia sesión primero.");
+    }
+
+    // Solicitud POST al endpoint de reservas
+    final response = await http.post(
+      Uri.parse('${baseUrl}reservas/'), // Endpoint para crear reservas
+      headers: {
+        'Authorization': 'Bearer $token', // Token para autenticación
+        'Content-Type': 'application/json', // Especificar JSON en headers
+      },
+      body: json.encode({
+        "usuario":
+            reserva['usuario'], // ID del usuario (puedes obtenerlo de tu app)
+        "cancha": reserva['cancha'], // ID de la cancha seleccionada
+        "fecha_reserva":
+            reserva['fecha_reserva'], // Fecha en formato "AAAA-MM-DD"
+        "hora_inicio":
+            reserva['hora_inicio'], // Hora inicio en formato "HH:MM:SS"
+        "hora_fin": reserva['hora_fin'], // Hora fin en formato "HH:MM:SS"
+        "estado": "pendiente" // Estado inicial de la reserva
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+    } else {
+      throw Exception("Error al crear la reserva: ${response.body}");
+    }
+  }
 }
