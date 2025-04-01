@@ -25,6 +25,7 @@ class AuthService {
 
       await secureStorage.write(key: 'access_token', value: data['access']);
       await secureStorage.write(key: 'refresh_token', value: data['refresh']);
+      await secureStorage.write(key: 'username', value: username);
     } else {
       throw Exception('Error al iniciar sesión: ${response.body}');
     }
@@ -61,10 +62,15 @@ class AuthService {
   Future<void> logout() async {
     await secureStorage.delete(key: 'access_token');
     await secureStorage.delete(key: 'refresh_token');
+    await secureStorage.delete(key: 'username'); // Borrar el username
   }
 
   // Leer el token almacenado
   Future<String?> getAccessToken() async {
     return await secureStorage.read(key: 'access_token');
+  }
+
+  Future<String?> getUsername() async {
+    return await secureStorage.read(key: 'username');
   }
 }

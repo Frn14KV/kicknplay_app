@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:kicknplay_app/pages/reservar_cancha_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 
 class CanchaDetailsPage extends StatefulWidget {
   final Map<String, dynamic> cancha;
@@ -124,18 +128,65 @@ class _CanchaDetailsPageState extends State<CanchaDetailsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReservarCanchaPage(
-                          cancha: widget
-                              .cancha, // Proporciona la información de la cancha
-                          usuarioId:
-                              11, // Reemplaza '11' con el ID real del usuario
+                  onPressed: () async {
+                    try {
+                      final FlutterSecureStorage secureStorage =
+                          FlutterSecureStorage();
+
+                      // 1. Recuperar el username desde FlutterSecureStorage
+                      final String? username =
+                          await secureStorage.read(key: 'username');
+                      if (username == null) {
+                        throw Exception(
+                            "No se encontró el username. Por favor inicia sesión primero.");
+                      }
+
+                      // 2. Llamar al API para obtener el usuario por username
+                      final String? token = await secureStorage.read(
+                          key:
+                              'access_token'); // Recupera el token desde FlutterSecureStorage
+                      if (token == null) {
+                        throw Exception(
+                            "No se encontró el token. Por favor inicia sesión primero.");
+                      }
+
+                      final response = await http.post(
+                        Uri.parse(
+                            'https://kickandplay-3b16b2f1fd11.herokuapp.com/api/obtener_usuario/'),
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization':
+                              'Bearer $token', // Incluye el token en los headers
+                        },
+                        body: json.encode({'username': username}),
+                      );
+
+                      if (response.statusCode != 200) {
+                        throw Exception(
+                            "Error al obtener la información del usuario: ${response.body}");
+                      }
+
+                      final data = json.decode(response.body);
+                      final int usuarioId = data[
+                          'id']; // Extraer el ID del usuario desde la respuesta
+
+                      // 3. Navegar a la pantalla de reserva con el ID del usuario
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReservarCanchaPage(
+                            cancha: widget.cancha, // Información de la cancha
+                            usuarioId:
+                                usuarioId, // ID dinámico del usuario obtenido del API
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    } catch (e) {
+                      // Manejo de errores
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error: ${e.toString()}")),
+                      );
+                    }
                   },
                   icon: Icon(Icons.calendar_today),
                   label: Text("Reservar"),
