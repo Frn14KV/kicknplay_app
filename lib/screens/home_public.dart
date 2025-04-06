@@ -5,6 +5,8 @@ import 'package:kicknplay_app/pages/map_page.dart';
 import 'package:kicknplay_app/screens/login_page.dart'; // Importa la pantalla de login
 
 class PublicHomePage extends StatelessWidget {
+  const PublicHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

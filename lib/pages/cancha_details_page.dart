@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 class CanchaDetailsPage extends StatefulWidget {
   final Map<String, dynamic> cancha;
 
-  const CanchaDetailsPage({Key? key, required this.cancha}) : super(key: key);
+  const CanchaDetailsPage({super.key, required this.cancha});
 
   @override
   _CanchaDetailsPageState createState() => _CanchaDetailsPageState();
@@ -375,11 +375,11 @@ class _CanchaDetailsPageState extends State<CanchaDetailsPage> {
                     );
                   }
                 },
-                child: Text("Enviar Comentario"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                 ),
+                child: Text("Enviar Comentario"),
               ),
             ),
           ],

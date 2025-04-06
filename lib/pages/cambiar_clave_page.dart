@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CambiarClavePage extends StatefulWidget {
+  const CambiarClavePage({super.key});
+
   @override
   _CambiarClavePageState createState() => _CambiarClavePageState();
 }

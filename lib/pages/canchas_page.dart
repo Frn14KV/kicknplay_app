@@ -5,6 +5,8 @@ import 'cancha_details_page.dart'; // Importa la pantalla de detalles
 import 'dart:math'; // Importa funciones matemáticas como sin, cos, atan2, sqrt
 
 class CanchasPage extends StatefulWidget {
+  const CanchasPage({super.key});
+
   @override
   _CanchasPageState createState() => _CanchasPageState();
 }

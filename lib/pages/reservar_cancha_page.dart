@@ -6,8 +6,7 @@ class ReservarCanchaPage extends StatefulWidget {
   final int usuarioId; // ID del usuario que realiza la reserva
 
   const ReservarCanchaPage(
-      {Key? key, required this.cancha, required this.usuarioId})
-      : super(key: key);
+      {super.key, required this.cancha, required this.usuarioId});
 
   @override
   _ReservarCanchaPageState createState() => _ReservarCanchaPageState();
@@ -159,11 +158,11 @@ class _ReservarCanchaPageState extends State<ReservarCanchaPage> {
             Center(
               child: ElevatedButton(
                 onPressed: _confirmarReserva,
-                child: Text("Confirmar Reserva"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                 ),
+                child: Text("Confirmar Reserva"),
               ),
             ),
           ],
