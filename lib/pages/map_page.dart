@@ -19,7 +19,6 @@ class _MapPageState extends State<MapPage> {
   GoogleMapController? _mapController;
   LatLng _currentLocation = LatLng(40.7684, -73.5251);
   bool _isLoading = true;
-  BitmapDescriptor? _logoMarker;
 
   @override
   void initState() {
@@ -34,9 +33,7 @@ class _MapPageState extends State<MapPage> {
       ImageConfiguration(size: Size(48, 48)),
       'assets/k&plogo.jpg',
     ).then((value) {
-      setState(() {
-        _logoMarker = value;
-      });
+      setState(() {});
     });
   }
 
