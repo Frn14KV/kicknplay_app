@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:kicknplay_app/pages/reservar_cancha_page.dart';
 import '../services/api_service.dart';
 
 class MapPage extends StatefulWidget {
@@ -101,6 +103,7 @@ class _MapPageState extends State<MapPage> {
   void _loadCanchas() async {
     try {
       final canchas = await _apiService.fetchCanchas();
+
       setState(() {
         _markers.addAll(
           canchas.map<Marker>((cancha) {
@@ -118,10 +121,62 @@ class _MapPageState extends State<MapPage> {
               position: position,
               infoWindow: InfoWindow(
                 title: nombre,
-                snippet: "", // No mostramos texto aquí
-                onTap: () {
-                  _showCanchaDetailsWithButtons(
-                      position, nombre, direccion, imageUrl);
+                snippet: "Haz clic aquí para reservar",
+                onTap: () async {
+                  try {
+                    final FlutterSecureStorage secureStorage =
+                        FlutterSecureStorage();
+
+                    // Obtener el username desde FlutterSecureStorage
+                    final String? username =
+                        await secureStorage.read(key: 'username');
+                    if (username == null) {
+                      throw Exception(
+                          "No se encontró el username. Por favor inicia sesión primero.");
+                    }
+
+                    // Obtener el token desde FlutterSecureStorage
+                    final String? token =
+                        await secureStorage.read(key: 'access_token');
+                    if (token == null) {
+                      throw Exception(
+                          "No se encontró el token. Por favor inicia sesión primero.");
+                    }
+
+                    // Llamar al API para obtener el usuario por username
+                    final response = await http.post(
+                      Uri.parse(
+                          'https://kickandplay-3b16b2f1fd11.herokuapp.com/api/obtener_usuario/'),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer $token',
+                      },
+                      body: json.encode({'username': username}),
+                    );
+
+                    if (response.statusCode != 200) {
+                      throw Exception(
+                          "Error al obtener la información del usuario: ${response.body}");
+                    }
+
+                    final data = json.decode(response.body);
+                    final int usuarioId =
+                        data['id']; // Extrae el ID del usuario
+
+                    // Llamar al modal con el ID dinámico del usuario
+                    _showCanchaDetailsWithButtons(
+                      position, // Coordenadas de la cancha
+                      nombre, // Nombre de la cancha
+                      direccion, // Dirección de la cancha
+                      imageUrl, // URL de la imagen
+                      usuarioId, // ID dinámico del usuario obtenido
+                      cancha, // Objeto completo de la cancha
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error: ${e.toString()}")),
+                    );
+                  }
                 },
               ),
               icon: BitmapDescriptor.defaultMarkerWithHue(
@@ -138,7 +193,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _showCanchaDetailsWithButtons(
-      LatLng position, String nombre, String direccion, String? imageUrl) {
+      LatLng position,
+      String nombre,
+      String direccion,
+      String? imageUrl,
+      int usuarioId,
+      Map<String, dynamic> cancha) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -148,34 +208,20 @@ class _MapPageState extends State<MapPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nombre de la cancha
-              Text(
-                nombre,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-
-              // Dirección de la cancha
-              Text(
-                direccion,
-                style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-              ),
-              SizedBox(height: 20),
-
               // Imagen de la cancha
               Center(
                 child: imageUrl != null && imageUrl.isNotEmpty
                     ? Image.network(
-                        imageUrl, // Imagen personalizada
+                        imageUrl,
                         height: 150,
-                        width: 150,
+                        width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          // Si hay un error al cargar la imagen
+                          // Imagen predeterminada si hay error al cargar
                           return Image.asset(
-                            'assets/k&plogo.jpg', // Imagen predeterminada
+                            'assets/k&plogo.jpg',
                             height: 150,
-                            width: 150,
+                            width: double.infinity,
                             fit: BoxFit.cover,
                           );
                         },
@@ -183,9 +229,23 @@ class _MapPageState extends State<MapPage> {
                     : Image.asset(
                         'assets/k&plogo.jpg', // Imagen predeterminada
                         height: 150,
-                        width: 150,
+                        width: double.infinity,
                         fit: BoxFit.cover,
                       ),
+              ),
+              SizedBox(height: 10),
+
+              // Nombre de la cancha
+              Text(
+                nombre,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 5),
+
+              // Dirección de la cancha
+              Text(
+                direccion,
+                style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
               ),
               SizedBox(height: 20),
 
@@ -196,16 +256,20 @@ class _MapPageState extends State<MapPage> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context); // Cierra el modal
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text("Mostrando detalles de la cancha...")),
-                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReservarCanchaPage(
+                            cancha: cancha, // Pasa la información de la cancha
+                            usuarioId: usuarioId, // Pasa el ID del usuario
+                          ),
+                        ),
+                      ); // Navega a la página de reservas
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF0077FF),
                     ),
-                    child: Text("Ver Cancha"),
+                    child: Text("Hacer Reserva"),
                   ),
                   ElevatedButton(
                     onPressed: () {
