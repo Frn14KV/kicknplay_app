@@ -6,6 +6,36 @@ class AuthService {
   final String baseUrl = "https://kickandplay-3b16b2f1fd11.herokuapp.com/api/";
   final secureStorage = const FlutterSecureStorage();
 
+  // Registro: Crea un nuevo usuario y almacena el token y username
+  Future<void> register(
+      String username, String email, String password1, String password2) async {
+    final response = await http.post(
+      Uri.parse('${baseUrl}registro/'),
+      body: json.encode({
+        'username': username,
+        'email': email,
+        'password1': password1,
+        'password2': password2,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 201) {
+      final data = json.decode(response.body);
+
+      // Guardar el access token, refresh token y username
+      await secureStorage.write(
+          key: 'access_token', value: data['access_token']);
+      await secureStorage.write(
+          key: 'refresh_token', value: data['refresh_token']);
+      await secureStorage.write(key: 'username', value: username);
+    } else {
+      throw Exception('Error al registrarse: ${response.body}');
+    }
+  }
+
   // Inicio de sesión: Obtiene el access token y el refresh token
   Future<void> login(String username, String password) async {
     final response = await http.post(
@@ -21,8 +51,8 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      // Guardar el access token y el refresh token de manera segura
 
+      // Guardar el access token y el refresh token de manera segura
       await secureStorage.write(key: 'access_token', value: data['access']);
       await secureStorage.write(key: 'refresh_token', value: data['refresh']);
       await secureStorage.write(key: 'username', value: username);
@@ -51,6 +81,7 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+
       // Actualizar el access token en el almacenamiento seguro
       await secureStorage.write(key: 'access_token', value: data['access']);
     } else {

@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:kicknplay_app/screens/home_page.dart';
-import 'package:kicknplay_app/screens/registro_page.dart';
+import 'login_page.dart';
 import '../services/auth_service.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
+class RegistroPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegistroPageState createState() => _RegistroPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final AuthService _authService = AuthService(); // Servicio de autenticación
+class _RegistroPageState extends State<RegistroPage> {
+  final _authService = AuthService(); // Servicio de autenticación
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); // Llave del formulario
-  bool _isLoading = false; // Indicador de carga
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  // Método para manejar el inicio de sesión
-  void _login() async {
+  bool _isLoading = false;
+
+  Future<void> _registerUser() async {
     if (!_formKey.currentState!.validate()) {
-      // Si los campos no son válidos, detener el proceso
+      // Detener el proceso si hay errores de validación
       return;
     }
 
@@ -29,26 +30,27 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // Intento de inicio de sesión
-      await _authService.login(
-        _usernameController.text,
-        _passwordController.text,
+      await _authService.register(
+        _usernameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _confirmPasswordController.text.trim(),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Inicio de sesión exitoso"),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Registro exitoso")),
+      );
 
-      // Navegar a la pantalla principal (HomePage)
+      // Navegar a la pantalla de inicio de sesión
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } catch (e) {
-      // Manejar error de inicio de sesión
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Usuario o clave incorrectos"),
-      ));
+      // Mostrar mensaje de error general
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error al registrarse: $e")),
+      );
     } finally {
       setState(() {
         _isLoading = false; // Ocultar indicador de carga
@@ -89,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Título
                   Text(
-                    "Iniciar Sesión",
+                    "Registrarse",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -98,11 +100,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   SizedBox(height: 40),
 
-                  // Campo de Usuario
+                  // Campo de Nombre de Usuario
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
-                      labelText: "Usuario",
+                      labelText: "Nombre de Usuario",
                       labelStyle: TextStyle(color: Colors.white),
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
@@ -115,7 +117,34 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.white),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return "Por favor ingresa tu usuario";
+                        return "Por favor ingresa tu nombre de usuario";
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+
+                  // Campo de Correo Electrónico
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: "Correo Electrónico",
+                      labelStyle: TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      prefixIcon: Icon(Icons.email, color: Colors.white),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: TextStyle(color: Colors.white),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Por favor ingresa tu correo electrónico";
+                      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                          .hasMatch(value)) {
+                        return "Por favor ingresa un correo válido";
                       }
                       return null;
                     },
@@ -137,22 +166,49 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     style: TextStyle(color: Colors.white),
-                    obscureText: true, // Ocultar el texto
+                    obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Por favor ingresa tu contraseña";
+                      } else if (value.length < 6) {
+                        return "La contraseña debe tener al menos 6 caracteres";
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+
+                  // Campo de Confirmación de Contraseña
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    decoration: InputDecoration(
+                      labelText: "Confirmar Contraseña",
+                      labelStyle: TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      prefixIcon: Icon(Icons.lock_outline, color: Colors.white),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: TextStyle(color: Colors.white),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value != _passwordController.text) {
+                        return "Las contraseñas no coinciden";
                       }
                       return null;
                     },
                   ),
                   SizedBox(height: 32),
 
-                  // Botón de Iniciar Sesión
+                  // Botón de Registrarse
                   _isLoading
                       ? Center(
                           child: CircularProgressIndicator(color: Colors.white))
                       : ElevatedButton(
-                          onPressed: _login,
+                          onPressed: _registerUser,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF0077FF),
                             padding: EdgeInsets.symmetric(
@@ -162,22 +218,22 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           child: Text(
-                            "Iniciar Sesión",
+                            "Registrarse",
                             style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                         ),
                   SizedBox(height: 16),
 
-                  // Botón para registrarse
+                  // Botón para iniciar sesión
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => RegistroPage()),
+                        MaterialPageRoute(builder: (context) => LoginPage()),
                       );
                     },
                     child: Text(
-                      "¿No tienes cuenta? Registrarse",
+                      "¿Ya tienes cuenta? Iniciar Sesión",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,

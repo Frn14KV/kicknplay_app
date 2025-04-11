@@ -8,14 +8,16 @@ import 'package:kicknplay_app/pages/reservar_cancha_page.dart';
 import '../services/api_service.dart';
 
 class MapPage extends StatefulWidget {
+  const MapPage({super.key});
+
   @override
   _MapPageState createState() => _MapPageState();
 }
 
 class _MapPageState extends State<MapPage> {
   final ApiService _apiService = ApiService();
-  Set<Marker> _markers = {};
-  Set<Polyline> _polylines = {}; // Polilíneas para las rutas
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {}; // Polilíneas para las rutas
   GoogleMapController? _mapController;
   LatLng _currentLocation = LatLng(40.7684, -73.5251);
   bool _isLoading = true;

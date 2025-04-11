@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kicknplay_app/pages/editar_reserva_page.dart';
+import 'package:kicknplay_app/pages/ver_reservaPage.dart';
 import '../services/api_service.dart';
 
 class ReservasPage extends StatefulWidget {
@@ -82,7 +84,8 @@ class _ReservasPageState extends State<ReservasPage> {
     if (confirmDelete) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text("Reserva ID: $reservaId eliminada exitosamente.")),
+          content: Text("Reserva ID: $reservaId eliminada exitosamente."),
+        ),
       );
     }
   }
@@ -93,11 +96,17 @@ class _ReservasPageState extends State<ReservasPage> {
       appBar: AppBar(
         title: Text("Mis Reservas"),
         backgroundColor: Color(0xFF0077FF),
+        elevation: 0, // Estilo plano
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator()) // Indicador de carga
           : _reservas.isEmpty
-              ? Center(child: Text("No tienes reservas."))
+              ? Center(
+                  child: Text(
+                    "No tienes reservas.",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                )
               : ListView.builder(
                   itemCount: _reservas.length,
                   itemBuilder: (context, index) {
@@ -106,125 +115,102 @@ class _ReservasPageState extends State<ReservasPage> {
                         esFutura(reserva['fecha_reserva']);
 
                     return Card(
-                      margin: EdgeInsets.all(8.0),
+                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      elevation: 4,
+                      elevation: 6,
                       child: ListTile(
                         contentPadding: EdgeInsets.all(16.0),
-                        title: Text(
-                          "Cancha ID: ${reserva['cancha']}",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0077FF),
-                            fontSize: 18,
+                        leading: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: isFutureReservation
+                              ? Colors.orange
+                              : Colors.green,
+                          child: Icon(
+                            Icons.calendar_today,
+                            color: Colors.white,
                           ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Fecha: ${reserva['fecha_reserva']}",
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[600]),
-                            ),
-                            Text(
-                              "Hora: ${reserva['hora_inicio']} - ${reserva['hora_fin']}",
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[600]),
-                            ),
-                            Text(
-                              "Estado: ${reserva['estado']}",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: reserva['estado'] == "pendiente"
-                                    ? Colors.orange
-                                    : Colors.green,
-                                fontWeight: FontWeight.bold,
+                        title: Text(
+                          "Cancha: ${reserva['cancha']}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Color(0xFF0077FF),
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Fecha: ${reserva['fecha_reserva']}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
                               ),
-                            ),
-                          ],
+                              Text(
+                                "Hora: ${reserva['hora_inicio']} - ${reserva['hora_fin']}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              Text(
+                                "Estado: ${reserva['estado']}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: reserva['estado'] == "pendiente"
+                                      ? Colors.orange
+                                      : Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         trailing: isFutureReservation
                             ? Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: Icon(Icons.remove_red_eye,
-                                        color: Color(0xFF0077FF)),
+                                    icon: Icon(
+                                      Icons.remove_red_eye,
+                                      color: Color(0xFF0077FF),
+                                    ),
                                     onPressed: () => verReserva(reserva),
                                   ),
                                   IconButton(
-                                    icon:
-                                        Icon(Icons.edit, color: Colors.orange),
+                                    icon: Icon(
+                                      Icons.edit,
+                                      color: Colors.orange,
+                                    ),
                                     onPressed: () => editarReserva(reserva),
                                   ),
                                   IconButton(
-                                    icon: Icon(Icons.delete,
-                                        color: Colors.redAccent),
+                                    icon: Icon(
+                                      Icons.delete,
+                                      color: Colors.redAccent,
+                                    ),
                                     onPressed: () =>
                                         eliminarReserva(reserva['id']),
                                   ),
                                 ],
                               )
                             : IconButton(
-                                icon: Icon(Icons.remove_red_eye,
-                                    color: Color(0xFF0077FF)),
+                                icon: Icon(
+                                  Icons.remove_red_eye,
+                                  color: Color(0xFF0077FF),
+                                ),
                                 onPressed: () => verReserva(reserva),
                               ),
                       ),
                     );
                   },
                 ),
-    );
-  }
-}
-
-// Pantalla de Ver Reserva (Placeholder)
-class VerReservaPage extends StatelessWidget {
-  final dynamic reserva;
-
-  const VerReservaPage({super.key, required this.reserva});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Ver Reserva"),
-        backgroundColor: Color(0xFF0077FF),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(
-          "Detalles de la reserva:\n\n"
-          "Cancha ID: ${reserva['cancha']}\n"
-          "Fecha: ${reserva['fecha_reserva']}\n"
-          "Inicio: ${reserva['hora_inicio']} - Fin: ${reserva['hora_fin']}\n"
-          "Estado: ${reserva['estado']}",
-          style: TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
-
-// Pantalla de Editar Reserva (Placeholder)
-class EditarReservaPage extends StatelessWidget {
-  final dynamic reserva;
-
-  const EditarReservaPage({super.key, required this.reserva});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Editar Reserva"),
-        backgroundColor: Color(0xFF0077FF),
-      ),
-      body: Center(
-        child: Text("Editar detalles de la reserva: ${reserva['cancha']}"),
-      ),
     );
   }
 }

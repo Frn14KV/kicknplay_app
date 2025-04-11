@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('KicknPlay'),
         backgroundColor: Color(0xFF0077FF), // Azul para consistencia visual
         foregroundColor: Colors.white,

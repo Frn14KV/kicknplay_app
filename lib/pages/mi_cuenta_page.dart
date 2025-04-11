@@ -88,7 +88,7 @@ class _MiCuentaPageState extends State<MiCuentaPage> {
 
                   // Saludo personalizado
                   Text(
-                    "¡Hola, ${userInfo['first_name']}!",
+                    "¡Hola, ${userInfo['first_name'] ?? 'Usuario'}!",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class _MiCuentaPageState extends State<MiCuentaPage> {
                                 Icon(Icons.person, color: Color(0xFF0077FF)),
                             title: Text("Nombre"),
                             subtitle: Text(
-                                "${userInfo['first_name']} ${userInfo['last_name']}"),
+                                "${userInfo['first_name'] ?? 'No especificado'} ${userInfo['last_name'] ?? ''}"),
                           ),
                         ),
                         Card(
@@ -120,7 +120,8 @@ class _MiCuentaPageState extends State<MiCuentaPage> {
                             leading:
                                 Icon(Icons.email, color: Color(0xFF0077FF)),
                             title: Text("Correo Electrónico"),
-                            subtitle: Text(userInfo['email']),
+                            subtitle:
+                                Text(userInfo['email'] ?? 'No registrado'),
                           ),
                         ),
                         Card(
@@ -130,8 +131,9 @@ class _MiCuentaPageState extends State<MiCuentaPage> {
                             leading:
                                 Icon(Icons.phone, color: Color(0xFF0077FF)),
                             title: Text("Teléfono"),
-                            subtitle:
-                                Text(userInfo['user_profile']['phone_number']),
+                            subtitle: Text(userInfo['user_profile']
+                                    ['phone_number'] ??
+                                'No registrado'),
                           ),
                         ),
                         Card(
@@ -141,8 +143,9 @@ class _MiCuentaPageState extends State<MiCuentaPage> {
                             leading: Icon(Icons.location_on,
                                 color: Color(0xFF0077FF)),
                             title: Text("Ubicación"),
-                            subtitle:
-                                Text(userInfo['user_profile']['location']),
+                            subtitle: Text(userInfo['user_profile']
+                                    ['location'] ??
+                                'No especificado'),
                           ),
                         ),
                         Card(
@@ -151,7 +154,8 @@ class _MiCuentaPageState extends State<MiCuentaPage> {
                           child: ListTile(
                             leading: Icon(Icons.info, color: Color(0xFF0077FF)),
                             title: Text("Bio"),
-                            subtitle: Text(userInfo['user_profile']['bio']),
+                            subtitle: Text(userInfo['user_profile']['bio'] ??
+                                'Sin biografía'),
                           ),
                         ),
                       ],
